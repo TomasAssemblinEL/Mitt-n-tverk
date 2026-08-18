@@ -3,77 +3,53 @@
 Visuell presentation av nätverkstopologin baserad på den aktuella infrastrukturen, inklusive VLAN, switchar, access points, firewall och IP-segment.
 
 ```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {
+  'background': '#050b14',
+  'primaryColor': '#0b1220',
+  'primaryTextColor': '#e2e8f0',
+  'primaryBorderColor': '#1d4ed8',
+  'lineColor': '#1d4ed8',
+  'secondaryColor': '#0b1220',
+  'tertiaryColor': '#0b1220',
+  'fontFamily': 'Segoe UI, Arial, sans-serif',
+  'fontSize': '14px'
+}}}%%
 flowchart LR
-    classDef isp fill:#dbeafe,stroke:#1d4ed8,color:#0f172a,stroke-width:2px
-    classDef switch fill:#dbeafe,stroke:#1d4ed8,color:#0f172a,stroke-width:2px
-    classDef ap fill:#dbeafe,stroke:#1d4ed8,color:#0f172a,stroke-width:2px
-    classDef server fill:#fef3c7,stroke:#b45309,color:#78350f,stroke-width:2px
-    classDef app fill:#fee2e2,stroke:#b91c1c,color:#7f1d1d,stroke-width:2px
-    classDef client fill:#f3f4f6,stroke:#374151,color:#111827,stroke-width:2px
+    classDef isp fill:#0b1220,stroke:#60a5fa,color:#e2e8f0,stroke-width:2px
+    classDef switch fill:#0b1220,stroke:#1d4ed8,color:#e2e8f0,stroke-width:2px
+    classDef ap fill:#0b1220,stroke:#60a5fa,color:#e2e8f0,stroke-width:2px
+    classDef client fill:#111827,stroke:#94a3b8,color:#e2e8f0,stroke-width:2px
+    classDef iot fill:#111827,stroke:#7dd3fc,color:#e2e8f0,stroke-width:2px
+    classDef server fill:#111827,stroke:#f59e0b,color:#fef3c7,stroke-width:2px
+
+    linkStyle default stroke:#1d4ed8,stroke-width:2px,color:#dbeafe
 
     ISP[ISP]:::isp --> USG[USG 3P]:::switch
-
     USG --> MainSwitch[Main Switch]:::switch
+
     MainSwitch --> MainSwitch1[Main Switch 1]:::switch
     MainSwitch --> MainSwitch2[Main Switch 2]:::switch
     MainSwitch --> IoTSwitch[IoT Switch]:::switch
-    MainSwitch1 --> Media[Media Vardagsrum]:::client
 
+    MainSwitch1 --> Media[Media Vardagsrum]:::client
     MainSwitch2 --> APGarage[AP Garage]:::ap
     IoTSwitch --> APHall[AP Hall]:::ap
 
-    USG -. "NAT / Port forward 80, 443" .-> Nginx
+    APGarage --> Laptop[Laptop / PC]:::client
+    APGarage --> Phone[Smartphone / Tablet]:::client
+    APHall --> Guest[Guest Wi‑Fi]:::client
+    IoTSwitch --> IoT1[IoT-sensorer]:::iot
+    IoTSwitch --> IoT2[Smart devices]:::iot
+    MainSwitch1 --> TV[TV / Media]:::client
 
-    subgraph VLAN10[VLAN 10 - Server / Management
-    192.168.1.0/24]
-        Proxmox[Proxmox host
-        192.168.1.10]:::server
-        LXC[LXC 105
-        192.168.1.65]:::server
-        Nginx[Nginx Reverse Proxy
-        80/443]:::app
-        Flask[Flask + Gunicorn
-        127.0.0.1:8080]:::app
-        HA[Home Assistant
-        192.168.1.166:8123]:::app
-        Immich[Immich
-        192.168.1.24:2283]:::app
-        ESP32[ESP32 Greenhouse
-        192.168.1.125]:::app
-    end
+    USG -. "NAT / Port forward 80, 443" .-> Nginx[Nginx Reverse Proxy]:::server
+    Nginx --> HA[Home Assistant]:::server
+    Nginx --> Immich[Immich]:::server
+    Nginx --> ESP32[ESP32 Greenhouse]:::server
 
-    subgraph VLAN20[VLAN 20 - Clients
-    192.168.2.0/24]
-        Laptop[Laptop / PC]:::client
-        Phone[Smartphone / Tablet]:::client
-        TV[TV / Media]:::client
-    end
-
-    subgraph VLAN30[VLAN 30 - IoT
-    192.168.3.0/24]
-        IoT1[IoT-sensorer]:::client
-        IoT2[Smart devices]:::client
-    end
-
-    subgraph VLAN40[VLAN 40 - Guest
-    192.168.4.0/24]
-        Guest[Guest Wi‑Fi]:::client
-    end
-
-    MainSwitch --> Proxmox
-    Proxmox --> LXC
-    LXC --> Nginx
-    Nginx --> Flask
-    Nginx --> HA
-    Nginx --> Immich
-    Nginx --> ESP32
-
-    APGarage --> Laptop
-    APGarage --> Phone
-    MainSwitch1 --> TV
-    APHall --> Guest
-    IoTSwitch --> IoT1
-    IoTSwitch --> IoT2
+    style MainSwitch fill:#0b1220,stroke:#1d4ed8,color:#e2e8f0,stroke-width:3px
+    style APGarage fill:#0b1220,stroke:#60a5fa,color:#e2e8f0,stroke-width:2px
+    style APHall fill:#0b1220,stroke:#60a5fa,color:#e2e8f0,stroke-width:2px
 ```
 
 ## Exponerade tjänster och domäner
